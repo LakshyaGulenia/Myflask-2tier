@@ -128,3 +128,136 @@ docker run -d \
 
 ```
 
+
+# 2-Tier Application Deployment with Kubernetes
+
+This guide explains how to deploy a 2-tier Flask application with MySQL using Kubernetes (Minikube).
+
+## Prerequisites
+
+Ensure that you have the following installed on your Ubuntu machine:
+- Docker
+- kubectl (Kubernetes CLI)
+- Minikube
+
+## Step 1: Install Docker
+
+Update your package list and install Docker:
+
+```bash
+sudo apt update
+sudo apt install docker.io
+```
+
+## Step 2: Install `kubectl`
+
+Download the latest stable release of `kubectl`:
+
+```bash
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+```
+
+Verify the download:
+
+```bash
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
+```
+
+Install `kubectl`:
+
+```bash
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+```
+
+Verify the installation:
+
+```bash
+kubectl version --client
+```
+
+## Step 3: Install Minikube
+
+Download and install Minikube:
+
+```bash
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+```
+
+## Step 4: Setup Docker Permissions
+
+Give the Docker permissions to the current user:
+
+```bash
+sudo chmod 777 /
+sudo usermod -aG docker $USER
+```
+
+Log out and log back in to apply the Docker group changes.
+
+## Step 5: Start Minikube
+
+Start Minikube and check its status:
+
+```bash
+minikube start
+minikube status
+kubectl cluster-info
+```
+
+## Step 6: Deploy Kubernetes Manifests
+
+Once Minikube is running, apply the Kubernetes manifests one by one to deploy the application and MySQL.
+
+### Deploy the Flask Application
+
+```bash
+kubectl apply -f two-tier-app-pod.yml
+kubectl apply -f two-tier-app-deployment.yml
+kubectl apply -f two-tier-app-svc.yml
+```
+
+### Deploy MySQL
+
+```bash
+kubectl apply -f mysql-deployment.yml
+kubectl apply -f mysql-svc.yml
+kubectl apply -f mysql-pv.yml
+kubectl apply -f mysql-pvc.yml
+```
+
+## Step 7: Update Environment Variables
+
+You need to configure the MySQL host in your `two-tier-app-deployment.yml` file.
+
+First, retrieve the MySQL ClusterIP by running:
+
+```bash
+kubectl get svc
+```
+
+Locate the `ClusterIP` of the MySQL service and update the `two-tier-app-deployment.yml`:
+
+```yaml
+- name: MYSQL_HOST
+  value: "your-sql-cluster-ip"
+```
+
+Once updated, reapply the deployment:
+
+```bash
+kubectl apply -f two-tier-app-deployment.yml
+```
+
+## Conclusion
+
+You have successfully deployed a 2-tier Flask application with MySQL using Kubernetes. You can now access the application using the NodePort service created for the Flask app.
+
+```bash
+kubectl get svc
+```
+
+Look for the `NodePort` to access the app via your Minikube instance's IP and the assigned port.
+
+
