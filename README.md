@@ -259,3 +259,46 @@ kubectl get svc
 Look for the `NodePort` to access the app via your Minikube instance's IP and the assigned port.
 
 
+
+## Helm Commands for Deployment 2 tier app
+
+### 1. Create a Helm Chart
+To create a Helm chart for your application, use the following command:
+```bash
+helm create <app-name>
+```
+
+### 2. View All Manifest Files
+To display the generated Kubernetes manifest files for the Helm chart:
+```bash
+helm template <chart-name>
+```
+
+### 3. Package the Helm Chart
+To package the Helm chart into a `.tgz` file:
+```bash
+helm package <chart-name>
+```
+
+### 4. Deploy the Helm Chart
+To deploy the packaged Helm chart:
+```bash
+helm install <release-name> ./<chart-name>
+```
+
+### 5. List Deployed Releases
+To view all deployed releases in Helm:
+```bash
+helm list
+```
+
+### Example:
+```bash
+helm create my-app
+helm template my-app
+helm package mysql-chart
+helm install mysql-chart ./mysql-chart
+helm list
+```
+
+
